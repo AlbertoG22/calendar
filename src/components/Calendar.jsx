@@ -7,6 +7,8 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const Calendar = () => {
 
   const [date, setDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     // let date = new Date();
@@ -14,6 +16,9 @@ const Calendar = () => {
     // let currMonth = date.getMonth();
 
     // renderCalendar();
+    console.log(date);
+    console.log(currentMonth);
+    console.log(currentYear);
   }, []);
 
   const renderCalendar = () => {
@@ -88,8 +93,48 @@ const Calendar = () => {
   };
 
 
-  const handlePrev = () => {};
-  const handleNext = () => {};
+  const handlePrevNext = (event) => {
+    // console.log(event.target.id);
+    if(event.target.id === "prev") {
+      setCurrentMonth( currentMonth - 1);
+    } else {
+      setCurrentMonth( currentMonth + 1);
+    }
+
+    if(currentMonth < 0 || currentMonth > 11) {
+      let date = new Date(currentYear, currentMonth);
+      setDate(date);
+      setCurrentMonth(date.getFullYear());
+      setCurrentYear(date.getMonth());
+    } else {
+      setDate(new Date());
+    }
+  };
+
+  const handleNext = (event) => {
+    if((currentMonth + 1) < 0 || (currentMonth + 1) > 11) {
+      let date = new Date(currentYear, currentMonth);
+      setDate(date);
+      setCurrentMonth(date.getFullYear());
+      setCurrentYear(date.getMonth());
+    } else {
+      setDate(new Date());
+    }
+    setCurrentMonth( currentMonth + 1)
+  };
+
+  const handlePrev = (event) => {
+    if((currentMonth - 1) < 0 || (currentMonth - 1) > 11) {
+      let date = new Date(currentYear, currentMonth);
+      setDate(date);
+      setCurrentMonth(date.getFullYear());
+      setCurrentYear(date.getMonth());
+    } else {
+      setDate(new Date());
+    }
+    setCurrentMonth( currentMonth - 1);
+  };
+
   const handleDay = (event) => {
     console.log(` ${event.target.textContent}`);
   };
@@ -99,9 +144,9 @@ const Calendar = () => {
       <div className='container'>
         <header>
           <div className='header'>
-            <p className='current-date'>{`${months[date.getMonth()]} ${date.getFullYear()}`}</p>
-            <button type="button" className='btn btn-light' onClick={handlePrev}>prev</button>
-            <button type="button" className='btn btn-light' onClick={handleNext}>next</button>
+            <p className='current-date'>{`${months[currentMonth]} ${currentYear}`}</p>
+            <button type="button" id="prev" className='btn btn-light' onClick={handlePrevNext}>prev</button>
+            <button type="button" id="next" className='btn btn-light' onClick={handlePrevNext}>next</button>
           </div>
         </header>
 
@@ -109,16 +154,9 @@ const Calendar = () => {
           <thead className='weeks'>
               {/* d-flex justify-content-around */}
             <tr className='row d-flex justify-content-around'>
-              {/* { weekDays.map(day => (
+              { weekDays.map(day => (
                 <th scope="col">{ day }</th>
-              )) } */}
-              <th scope="col">Sun</th>
-              <th scope="col">Mon</th>
-              <th scope="col">Tue</th>
-              <th scope="col">Wed</th>
-              <th scope="col">Thu</th>
-              <th scope="col">Fri</th>
-              <th scope="col">Sat</th>
+              )) }
             </tr>
           </thead>
           <tbody className='days'>
