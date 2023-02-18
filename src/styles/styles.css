@@ -1,13 +1,21 @@
 
 .inactive {
-    background-color: rgb(230, 229, 229);
+    background-color: rgb(247, 241, 241);
+    color: gray;
 }
 .active {
-    background-color: rgb(70, 224, 101);
+    background-color: rgb(177, 252, 192);
+    font-weight: 800;
 }
 
 
-
+.calendar {
+    width: 1200px;
+}
+.event {
+    font-size: 12px;
+    overflow: hidden;
+}
 
 .calendar-header {
     /* position: relative; */
@@ -15,6 +23,13 @@
     /* background-color: red; */
     height: 30px;
 }
-/* .head-day {
-    border: 2px solid;
-} */
+
+.calendar-days {
+    /* background-color: red; */
+    height: 100px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.calendar-header {
+    /* border: 2px solid; */
+}

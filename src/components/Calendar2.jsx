@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -8,9 +8,35 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const Calendar2 = () => {
 
     const [currDate, setCurrDate] = useState(new Date());
+    const [events, setEvents] = useState([]);
 
     let currMonth = currDate.getMonth();
     let currYear = currDate.getFullYear();
+    console.log(events);
+
+    useEffect(() => {
+
+        getEventsData();
+
+    }, []);
+    
+    const getEventsData = async () => {
+        const response = await fetch('https://altomobile.blob.core.windows.net/api/test.json')
+        const data = await response.json();
+
+        const eventsArray = data.map(item => {
+            let date = new Date(item.time);
+
+            return {
+                date: `${date.getDate()} ${date.getMonth() + 1} ${date.getFullYear()}`,
+                // time: `${date.getHours() + 6}:${date.getMinutes()}`,
+                eventName: item.name
+            };
+        });
+        // console.log(eventsArray);
+        setEvents([...events, ...eventsArray]);
+    };
+
 
     const renderCalendar = () => {
         let lastDateOfMonth = new Date(currYear, currMonth + 1, 0).getDate(); // días que tiene el mes
@@ -36,7 +62,8 @@ const Calendar2 = () => {
             let isToday = i === currDate.getDate() && currMonth === new Date().getMonth() && currYear === new Date().getFullYear() ? 'active' : '';
             // tdTag.push(<td key={`${currMonth} ${i}`} className={isToday}>{i}</td>);
             tdTag.push([ { 
-                key: `${months[currMonth]} ${i}`, 
+                // key: `${months[currMonth]} ${i}`, 
+                key: `${i} ${currMonth+1} ${currYear}`, 
                 className: isToday, 
                 value: i
             } ]);
@@ -59,16 +86,23 @@ const Calendar2 = () => {
         }
 
         const daysOfMonth = separatedArrays.map((array, index) => (
-            <tr className='row' key={index}>
-                {array.map((elemento, i) => (
-                    <td
-                        key={ elemento[0].key } 
-                        className={ `col ${elemento[0].className}` }
-                        onClick={handleDay}
-                    >
-                        { elemento[0].value }
-                    </td>
-                ))}
+            <tr className='row border' key={index}>
+                { array.map((elemento, i) => (
+                    <>
+                        {/* si el día (key) es igual al del evento (en el obj), se muestra, si no no  */}
+                        {/* <div className={elemento[0].className}>hola</div> */}
+                        {/* { console.log(elemento[0].key) } */}
+                        { showEvent(elemento[0].key) }
+                        <td
+                            key={ elemento[0].key } 
+                            data-index={ elemento[0].key }
+                            className={ `calendar-days ${elemento[0].className} col d-flex align-items-start justify-content-end border-right` }
+                            onDoubleClick={handleDay}
+                        >
+                            { elemento[0].value }
+                        </td>
+                    </>
+                )) }
             </tr>
         ));
 
@@ -78,128 +112,73 @@ const Calendar2 = () => {
 
     const handlePrevNext = (event) => {
         currMonth = event.target.id === "prev" ? currMonth - 1 : currMonth + 1;
-        setCurrDate(new Date(currYear, currMonth));
+        // always have the actual current day
+        if(currMonth === new Date().getMonth() && currYear === new Date().getFullYear()) {
+            setCurrDate(new Date());
+        } else {
+            setCurrDate(new Date(currYear, currMonth));
+        }
     };
 
     const handleDay = (event) => {
-        console.log(` ${event.target.textContent}`);
+        // const time = prompt('Set the hour for the event:\nFormat: HH:mm');
+        const newAppointment = prompt('Event description:');
+        console.log(newAppointment);
+        console.log(event.target.getAttribute('data-index'));
+        const newEvent = {
+            date: event.target.getAttribute('data-index'),
+            eventName: newAppointment
+        };
+        // console.log(` ${event.target.textContent}`);
+        
+        setEvents([...events, {...newEvent}]);
+        // console.log(newEvent);
     };
+
+    const showEvent = (date) => {
+        let eventsArray = [];
+        events.map(event => {
+            if(!event.eventName) return;
+
+            if(date === event.date) {
+                eventsArray.push(
+                    <div className='event'>
+                        <p>{event.eventName}</p>
+                    </div>
+                );
+            }
+
+        });
+        return eventsArray;
+    }
 
     return (
         <>
             <div className="container">
-                <div className="header row">
+                <header className='header row mb-2 mt-5'>
                     <div className="tittle col">
-                        <p>Mes año</p>
+                        <h4 className='current-date'>{`${months[currMonth]} ${currYear}`}</h4>
                     </div>
-                    <div className="buttons col-2">
-                        <button>prev</button>
-                        <button>next</button>
-                    </div>
-                </div>
-
-                <div className="calendar container">
-                    <div className="calendar-header row">
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Sun</div>
-                        </div>
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Mon</div>
-                        </div>
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Tue</div>
-                        </div>
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Wed</div>
-                        </div>
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Thu</div>
-                        </div>
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Fri</div>
-                        </div>
-                        <div className="col d-flex align-items-center justify-content-center">
-                            <div className='row'>Sat</div>
-                        </div>
-                    </div>
-                    <div className="calendar-days">
-                        <div className="week-1 row">
-                            <p className='col d-flex align-items-center justify-content-center'>1</p>
-                            <p className='col d-flex align-items-center justify-content-center'>2</p>
-                            <p className='col d-flex align-items-center justify-content-center'>3</p>
-                            <p className='col d-flex align-items-center justify-content-center'>4</p>
-                            <p className='col d-flex align-items-center justify-content-center'>5</p>
-                            <p className='col d-flex align-items-center justify-content-center'>6</p>
-                            <p className='col d-flex align-items-center justify-content-center'>7</p>
-                        </div>
-                        <div className="week-1 row">
-                            <p className='col d-flex align-items-center justify-content-center'>8</p>
-                            <p className='col d-flex align-items-center justify-content-center'>9</p>
-                            <p className='col d-flex align-items-center justify-content-center'>10</p>
-                            <p className='col d-flex align-items-center justify-content-center'>11</p>
-                            <p className='col d-flex align-items-center justify-content-center'>12</p>
-                            <p className='col d-flex align-items-center justify-content-center'>13</p>
-                            <p className='col d-flex align-items-center justify-content-center'>14</p>
-                        </div>
-                        <div className="week-1 row">
-                            <p className='col d-flex align-items-center justify-content-center'>15</p>
-                            <p className='col d-flex align-items-center justify-content-center'>16</p>
-                            <p className='col d-flex align-items-center justify-content-center'>17</p>
-                            <p className='col d-flex align-items-center justify-content-center'>18</p>
-                            <p className='col d-flex align-items-center justify-content-center'>19</p>
-                            <p className='col d-flex align-items-center justify-content-center'>20</p>
-                            <p className='col d-flex align-items-center justify-content-center'>21</p>
-                        </div>
-                        <div className="week-1 row">
-                            <p className='col d-flex align-items-center justify-content-center'>22</p>
-                            <p className='col d-flex align-items-center justify-content-center'>23</p>
-                            <p className='col d-flex align-items-center justify-content-center'>24</p>
-                            <p className='col d-flex align-items-center justify-content-center'>25</p>
-                            <p className='col d-flex align-items-center justify-content-center'>26</p>
-                            <p className='col d-flex align-items-center justify-content-center'>27</p>
-                            <p className='col d-flex align-items-center justify-content-center'>28</p>
-                        </div>
-                        <div className="week-1 row">
-                            <p className='col d-flex align-items-center justify-content-center'>29</p>
-                            <p className='col d-flex align-items-center justify-content-center'>30</p>
-                            <p className='col d-flex align-items-center justify-content-center'>31</p>
-                            <p className='col d-flex align-items-center justify-content-center'>1</p>
-                            <p className='col d-flex align-items-center justify-content-center'>2</p>
-                            <p className='col d-flex align-items-center justify-content-center'>3</p>
-                            <p className='col d-flex align-items-center justify-content-center'>4</p>
-                        </div>
-                        {/* ... */}
-                    </div>
-                </div>
-            </div>
-
-
-            <div className='container'>
-                <header className=''>
-                    <div className='d-flex justify-content-around'>
-                        <p className='current-date'>{`${months[currMonth]} ${currYear}`}</p>
-                        <div>
-                            <button type="button" id="prev" className='btn btn-light' onClick={handlePrevNext}>prev</button>
-                            <button type="button" id="next" className='btn btn-light' onClick={handlePrevNext}>next</button>
-                        </div>
+                    <div className='buttons col-3 d-flex justify-content-between'>
+                        <button type="button" id="prev" className='btn btn-light' onClick={handlePrevNext}>prev</button>
+                        <button type="button" id="next" className='btn btn-light' onClick={handlePrevNext}>next</button>
+                        <button type="button" id="today" className='btn btn-success' onClick={() => setCurrDate(new Date())}>today</button>
                     </div>
                 </header>
 
-                <table className='calendar'>
-                    <div className="container">
-                        <thead className='weeks'>
-                            <tr className='row d-flex justify-content-around'>
-                                { weekDays.map((day, i) => (
-                                    <th key={i} scope="col">{ day }</th>
-                                )) }
+                <table className="calendar container">
+                    <thead className="calendar-header row mt-3 border-top border-left">
+                        { weekDays.map((day, i) => (
+                            <tr className="col border-right d-flex align-items-center justify-content-center">
+                                <th key={i} scope="col" >{ day }</th>
                             </tr>
-                        </thead>
-                        <tbody className='days'>
-                            { renderCalendar() }
-                        </tbody>
-                    </div>
-                </table>
+                        )) }
+                    </thead>
 
+                    <tbody className="">
+                        { renderCalendar() }
+                    </tbody>
+                </table>
             </div>
         </>
     );
