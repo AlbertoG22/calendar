@@ -36,3 +36,10 @@
 .calendar-header {
     /* border: 2px solid; */
 }
+.week {
+    min-height: 110px;
+    height: auto;
+}
+/* .week2 {
+    height: 100px;
+} */

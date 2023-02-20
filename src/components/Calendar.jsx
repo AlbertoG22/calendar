@@ -13,8 +13,7 @@ const Calendar = () => {
 
     let currMonth = currDate.getMonth();
     let currYear = currDate.getFullYear();
-    console.log(events);
-    console.log(JSON.parse(localStorage.getItem('event')));
+    // console.log(events);
 
     useEffect(() => {
 
@@ -35,7 +34,7 @@ const Calendar = () => {
                 eventName: item.name
             };
         });
-        console.log(eventsArray);
+        // console.log(eventsArray);
         setEvents([...events, ...eventsArray]);
     };
 
@@ -87,17 +86,18 @@ const Calendar = () => {
         }
 
         const daysOfMonth = separatedArrays.map((array, index) => (
-            <tr className='row border' key={index}>
+            <tr className='row border week2' key={index}>
                 { array.map((elemento, i) => (
                     <>
                         <div 
                             key={ elemento[0].key } 
                             data-index={ elemento[0].key }
-                            className={ `calendar-days ${elemento[0].className} col border-right p-0` }
+                            className={ `week calendar-days ${elemento[0].className} col border-right p-0` }
                             onDoubleClick={handleDay}
                         >
                             <div className='col'>
                                 <td
+                                    // key={ elemento[0].key } 
                                     className='d-flex align-items-start justify-content-end'
                                 >
                                     { elemento[0].value }
