@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { months } from './data/months-days';
+import { months } from '../data/months-days';
 import CalendarContent from './CalendarContent';
 import CalendarHeader from './CalendarHeader';
 import Week from './Week';

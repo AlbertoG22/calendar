@@ -1,4 +1,4 @@
-import { weekDays } from './data/months-days';
+import { weekDays } from '../data/months-days';
 
 const CalendarContent = ({ renderCalendar }) => {
   return (

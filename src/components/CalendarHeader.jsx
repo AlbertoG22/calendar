@@ -1,4 +1,4 @@
-import { months } from './data/months-days';
+import { months } from '../data/months-days';
 
 const CalendarHeader = ({
   currYear,
