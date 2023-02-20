@@ -13,6 +13,7 @@ const Calendar2 = () => {
     let currMonth = currDate.getMonth();
     let currYear = currDate.getFullYear();
     console.log(events);
+    console.log(localStorage.getItem('event'));
 
     useEffect(() => {
 
@@ -48,9 +49,9 @@ const Calendar2 = () => {
 
         // ciclo para los últimos días del mes previo
         for(let i = firstDayOfMonth; i > 0; i--) {
-            // tdTag.push(<td key={`${currMonth} ${i}`} className="inactive">{lastDateOfPrevMonth - i + 1}</td>);
             tdTag.push([ { 
-                key: `${months[currMonth-1]} ${lastDateOfPrevMonth - i + 1}`, 
+                // key: `${months[currMonth-1]} ${lastDateOfPrevMonth - i + 1}`, 
+                key : `${lastDateOfPrevMonth - i + 1} ${currMonth} ${currYear}`,
                 className: "inactive", 
                 value: lastDateOfPrevMonth - i + 1
             } ]);
@@ -60,10 +61,9 @@ const Calendar2 = () => {
         for(let i = 1; i <= lastDateOfMonth; i++) {
             // revisar si es el día actual
             let isToday = i === currDate.getDate() && currMonth === new Date().getMonth() && currYear === new Date().getFullYear() ? 'active' : '';
-            // tdTag.push(<td key={`${currMonth} ${i}`} className={isToday}>{i}</td>);
             tdTag.push([ { 
                 // key: `${months[currMonth]} ${i}`, 
-                key: `${i} ${currMonth+1} ${currYear}`, 
+                key: `${i} ${currMonth + 1} ${currYear}`, 
                 className: isToday, 
                 value: i
             } ]);
@@ -71,9 +71,9 @@ const Calendar2 = () => {
 
         // ciclo para los primeros días del siguiente mes
         for(let i = lastDayOfMonth; i < 6; i++) {
-            // tdTag.push(<td key={`${currMonth} ${i}`} className="inactive">{i - lastDayOfMonth + 1}</td>);
             tdTag.push([ { 
-                key: `${months[currMonth+1]} ${i - lastDayOfMonth + 1}`, 
+                // key: `${months[currMonth+1]} ${i - lastDayOfMonth + 1}`, 
+                key: `${i - lastDayOfMonth + 1} ${currMonth + 2} ${currYear}`,
                 className: "inactive", 
                 value: i - lastDayOfMonth + 1
             } ]);
@@ -89,18 +89,24 @@ const Calendar2 = () => {
             <tr className='row border' key={index}>
                 { array.map((elemento, i) => (
                     <>
-                        {/* si el día (key) es igual al del evento (en el obj), se muestra, si no no  */}
-                        {/* <div className={elemento[0].className}>hola</div> */}
-                        {/* { console.log(elemento[0].key) } */}
-                        { showEvent(elemento[0].key) }
-                        <td
-                            key={ elemento[0].key } 
-                            data-index={ elemento[0].key }
-                            className={ `calendar-days ${elemento[0].className} col d-flex align-items-start justify-content-end border-right` }
-                            onDoubleClick={handleDay}
+                        <div 
+                            className={ `calendar-days ${elemento[0].className} col border-right p-0` }
+                            // onDoubleClick={handleDay}
                         >
-                            { elemento[0].value }
-                        </td>
+                            <div className='col'>
+                                <td
+                                    key={ elemento[0].key } 
+                                    data-index={ elemento[0].key }
+                                    className='d-flex align-items-start justify-content-end'
+                                    onDoubleClick={handleDay}
+                                >
+                                    { elemento[0].value }
+                                </td>
+                                <div className=''>
+                                    { showEvent(elemento[0].key) }
+                                </div>
+                            </div>
+                        </div>
                     </>
                 )) }
             </tr>
@@ -123,13 +129,17 @@ const Calendar2 = () => {
     const handleDay = (event) => {
         // const time = prompt('Set the hour for the event:\nFormat: HH:mm');
         const newAppointment = prompt('Event description:');
+        if(!newAppointment) return;
+        
         console.log(newAppointment);
         console.log(event.target.getAttribute('data-index'));
         const newEvent = {
             date: event.target.getAttribute('data-index'),
             eventName: newAppointment
         };
-        // console.log(` ${event.target.textContent}`);
+        
+        let allEvents = JSON.stringify([...events, {...newEvent}]);
+        localStorage.setItem('event', allEvents);
         
         setEvents([...events, {...newEvent}]);
         // console.log(newEvent);
@@ -137,13 +147,16 @@ const Calendar2 = () => {
 
     const showEvent = (date) => {
         let eventsArray = [];
+        // const eventsFromStorage = JSON.parse(localStorage.getItem('event'));
+        // console.log(eventsFromStorage);
+
         events.map(event => {
             if(!event.eventName) return;
 
             if(date === event.date) {
                 eventsArray.push(
                     <div className='event'>
-                        <p>{event.eventName}</p>
+                        <p className='m-0'>{event.eventName}</p>
                     </div>
                 );
             }
@@ -154,7 +167,7 @@ const Calendar2 = () => {
 
     return (
         <>
-            <div className="container">
+            <div className="">
                 <header className='header row mb-2 mt-5'>
                     <div className="tittle col">
                         <h4 className='current-date'>{`${months[currMonth]} ${currYear}`}</h4>
@@ -166,7 +179,7 @@ const Calendar2 = () => {
                     </div>
                 </header>
 
-                <table className="calendar container">
+                <table className="calendar ">
                     <thead className="calendar-header row mt-3 border-top border-left">
                         { weekDays.map((day, i) => (
                             <tr className="col border-right d-flex align-items-center justify-content-center">
