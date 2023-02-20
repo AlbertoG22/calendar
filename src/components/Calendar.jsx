@@ -9,7 +9,6 @@ const Calendar = () => {
 
     const [currDate, setCurrDate] = useState(new Date());
     const [events, setEvents] = useState(localStorage.getItem('event') ? JSON.parse(localStorage.getItem('event')) : []);
-    // const [events, setEvents] = useState([]);
     const [ personalEvents, setPersonalEvents ] = useState(localStorage.getItem('event') ? JSON.parse(localStorage.getItem('event')) : []);
 
     let currMonth = currDate.getMonth();
@@ -19,21 +18,10 @@ const Calendar = () => {
 
     useEffect(() => {
 
-        // getPersonalEvents();
-        // localStorage.removeItem('event');
         getEventsData();
 
     }, []);
 
-    // const getPersonalEvents = (value) => {
-    //     if(localStorage.getItem('event')) {
-    //         let eventsFromStorage = JSON.parse(localStorage.getItem('event'));
-    //         console.log(eventsFromStorage);
-    //         setEvents([ ...eventsFromStorage ]);
-    //         localStorage.removeItem('event');
-    //     } 
-    // };
-    
     const getEventsData = async () => {
         const response = await fetch('https://altomobile.blob.core.windows.net/api/test.json')
         const data = await response.json();
@@ -49,7 +37,6 @@ const Calendar = () => {
         });
         console.log(eventsArray);
         setEvents([...events, ...eventsArray]);
-        // localStorage.removeItem('event');
     };
 
 
