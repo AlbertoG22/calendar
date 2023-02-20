@@ -1,96 +1,110 @@
 import React, { useEffect, useState } from 'react';
-import { months, weekDays } from './data/months-days';
+
+
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 
 const Calendar = () => {
+
     const [currDate, setCurrDate] = useState(new Date());
-    const [appointments, setAppointments] = useState(localStorage.getItem('appointment') ? JSON.parse(localStorage.getItem('appointment')) : []);
-    const [ personalAppointments, setPersonalAppointments ] = useState(localStorage.getItem('appointment') ? JSON.parse(localStorage.getItem('appointment')) : []);
+    const [events, setEvents] = useState(localStorage.getItem('event') ? JSON.parse(localStorage.getItem('event')) : []);
+    const [ personalEvents, setPersonalEvents ] = useState(localStorage.getItem('event') ? JSON.parse(localStorage.getItem('event')) : []);
 
     let currMonth = currDate.getMonth();
     let currYear = currDate.getFullYear();
+    // console.log(events);
 
     useEffect(() => {
-        getCloudAppointments();
+
+        getEventsData();
+
     }, []);
 
-    // fetch appointments from API
-    const getCloudAppointments = async () => {
-        const res = await fetch('https://altomobile.blob.core.windows.net/api/test.json');
-        const data = await res.json();
+    const getEventsData = async () => {
+        const response = await fetch('https://altomobile.blob.core.windows.net/api/test.json')
+        const data = await response.json();
 
         const eventsArray = data.map(item => {
             let date = new Date(item.time);
+
             return {
-                eventDate: `${date.getDate()} ${date.getMonth() + 1} ${date.getFullYear()}`,
+                date: `${date.getDate()} ${date.getMonth() + 1} ${date.getFullYear()}`,
+                // time: `${date.getHours() + 6}:${date.getMinutes()}`,
                 eventName: item.name
             };
         });
-        setAppointments([...appointments, ...eventsArray]);
+        // console.log(eventsArray);
+        setEvents([...events, ...eventsArray]);
     };
 
-    // get the calendar days (previous, current and next) and order them in weeks
+
     const renderCalendar = () => {
-        let lastDateOfMonth = new Date(currYear, currMonth + 1, 0).getDate(); // number of days of the month
-        let lastDateOfPrevMonth = new Date(currYear, currMonth, 0).getDate(); // number of days in the prevMonth
-        let firstDayOfMonth = new Date(currYear, currMonth, 1).getDay(); // day of the week that starts the month (0-6)
-        let lastDayOfMonth = new Date(currYear, currMonth, lastDateOfMonth).getDay(); // last day of the week of the prevMonth
+        let lastDateOfMonth = new Date(currYear, currMonth + 1, 0).getDate(); // días que tiene el mes
+        let lastDateOfPrevMonth = new Date(currYear, currMonth, 0).getDate(); // días que tiene el mes anterior
+        let firstDayOfMonth = new Date(currYear, currMonth, 1).getDay(); // día de la semana que inicia el mes (0-6)
+        let lastDayOfMonth = new Date(currYear, currMonth, lastDateOfMonth).getDay(); // último día de la semana del mes anterior
 
         let tdTag = [];
 
-        // get last days of the prevMonth
+        // ciclo para los últimos días del mes previo
         for(let i = firstDayOfMonth; i > 0; i--) {
-            tdTag.push([{  
+            tdTag.push([ { 
+                // key: `${months[currMonth-1]} ${lastDateOfPrevMonth - i + 1}`, 
                 key : `${lastDateOfPrevMonth - i + 1} ${currMonth} ${currYear}`,
-                className: 'inactive', 
+                className: "inactive", 
                 value: lastDateOfPrevMonth - i + 1
-            }]);
+            } ]);
         }
 
-        // get days of the currMonth
+        // ciclo para los días del mes
         for(let i = 1; i <= lastDateOfMonth; i++) {
-            // add 'active' class in the current day only
+            // revisar si es el día actual
             let isToday = i === currDate.getDate() && currMonth === new Date().getMonth() && currYear === new Date().getFullYear() ? 'active' : '';
             tdTag.push([ { 
+                // key: `${months[currMonth]} ${i}`, 
                 key: `${i} ${currMonth + 1} ${currYear}`, 
                 className: isToday, 
                 value: i
             } ]);
         }
 
-        // get first days of the nextMonth
+        // ciclo para los primeros días del siguiente mes
         for(let i = lastDayOfMonth; i < 6; i++) {
             tdTag.push([ { 
+                // key: `${months[currMonth+1]} ${i - lastDayOfMonth + 1}`, 
                 key: `${i - lastDayOfMonth + 1} ${currMonth + 2} ${currYear}`,
                 className: "inactive", 
                 value: i - lastDayOfMonth + 1
             } ]);
         }
 
-        // separate days into weeks (7days)
         const separatedArrays = [];
+    
         while (tdTag.length > 0) {
             separatedArrays.push(tdTag.splice(0, 7));
         }
 
-        // render weeks
-        const daysOfMonth = separatedArrays.map((week, index) => (
-            <tr className='row border ' key={`${months[currMonth]} ${currYear} week-${index}`}>
-                { week.map((day, i) => (
+        const daysOfMonth = separatedArrays.map((array, index) => (
+            <tr className='row border week2' key={index}>
+                { array.map((elemento, i) => (
                     <>
                         <div 
-                            key={ day[0].key } 
-                            data-index={ day[0].key }
-                            className={ `week calendar-days ${day[0].className} col border-right p-0` }
-                            onDoubleClick={addNewAppointment}
+                            key={ elemento[0].key } 
+                            data-index={ elemento[0].key }
+                            className={ `week calendar-days ${elemento[0].className} col border-right p-0` }
+                            onDoubleClick={handleDay}
                         >
-                            <div className='col' key={`${day[0].value}`}>
+                            <div className='col'>
                                 <td
-                                    key={ `day ${day[0].value}` } 
+                                    // key={ elemento[0].key } 
                                     className='d-flex align-items-start justify-content-end'
                                 >
-                                    { day[0].value }
+                                    { elemento[0].value }
                                 </td>
-                                { renderAppointment(day[0].key) }
+                                <div className=''>
+                                    { showEvent(elemento[0].key) }
+                                </div>
                             </div>
                         </div>
                     </>
@@ -101,9 +115,10 @@ const Calendar = () => {
         return daysOfMonth;
     };
 
-    const handlePrevNext = (e) => {
-        currMonth = e.target.id === "prev" ? currMonth - 1 : currMonth + 1;
-        // always have the real current day
+
+    const handlePrevNext = (event) => {
+        currMonth = event.target.id === "prev" ? currMonth - 1 : currMonth + 1;
+        // always have the actual current day
         if(currMonth === new Date().getMonth() && currYear === new Date().getFullYear()) {
             setCurrDate(new Date());
         } else {
@@ -111,34 +126,36 @@ const Calendar = () => {
         }
     };
 
-    // create new appointment and add it to the state
-    const addNewAppointment = (e) => {
+    const handleDay = (event) => {
+        // const time = prompt('Set the hour for the event:\nFormat: HH:mm');
         const newAppointment = prompt('Event description:');
         if(!newAppointment) return;
         
+        console.log(newAppointment);
+        console.log(event.target.getAttribute('data-index'));
         const newEvent = {
-            eventDate: e.target.getAttribute('data-index'),
+            date: event.target.getAttribute('data-index'),
             eventName: newAppointment
         };
         
-        setPersonalAppointments([...personalAppointments, {...newEvent}]);
-        let allEvents = JSON.stringify([...personalAppointments, {...newEvent}]);
-        localStorage.setItem('appointment', allEvents);
+        setPersonalEvents([...personalEvents, {...newEvent}]);
+        let allEvents = JSON.stringify([...personalEvents, {...newEvent}]);
+        localStorage.setItem('event', allEvents);
         
-        setAppointments([...appointments, {...newEvent}]);
+        setEvents([...events, {...newEvent}]);
+        // console.log(newEvent);
     };
 
-    // render appointments on the calendar
-    const renderAppointment = (date) => {
+    const showEvent = (date) => {
         let eventsArray = [];
 
-        appointments.map((appItem, index) => {
-            if(!appItem.eventName) return;
+        events.map(event => {
+            if(!event.eventName) return;
 
-            if(date === appItem.eventDate) {
+            if(date === event.date) {
                 eventsArray.push(
-                    <div className='fs-event' key={index}>
-                        <p key={`event ${index}`} className='m-0'>{appItem.eventName}</p>
+                    <div className='event'>
+                        <p className='m-0'>{event.eventName}</p>
                     </div>
                 );
             }
@@ -164,8 +181,8 @@ const Calendar = () => {
                 <table className="calendar ">
                     <thead className="calendar-header row mt-3 border-top border-left">
                         { weekDays.map((day, i) => (
-                            <tr key={day} className="col border-right d-flex align-items-center justify-content-center">
-                                <th key={`day ${i}`} scope="col" >{ day }</th>
+                            <tr className="col border-right d-flex align-items-center justify-content-center">
+                                <th key={i} scope="col" >{ day }</th>
                             </tr>
                         )) }
                     </thead>
