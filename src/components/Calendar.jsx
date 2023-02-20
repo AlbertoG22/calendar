@@ -175,7 +175,7 @@ const Calendar = () => {
 
     return (
         <>
-            <div className="">
+            <div className="mb-5">
                 <header className='header container row mb-2 mt-5'>
                     <div className='buttons col-3 d-flex justify-content-around mr-5' >
                         <button type="button" id="prev" className='btn btn-light btn-sm' onClick={handlePrevNext}>prev</button>
